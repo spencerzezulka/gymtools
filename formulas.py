@@ -12,12 +12,13 @@ class GymBro():
         self.metric = metric
 
 class GymBroStats(GymBro):
-    def __init__(self, weight, reps, metric=True, formula='Epley', max_reps_shown=30):
+    def __init__(self, weight, reps, metric=True, formula='Epley', max_reps_shown=30, rounded=False, round_down=True):
         super().__init__(weight=weight, reps=reps, metric=metric)
         self.formula = formula
         self.rep_array = self.create_rep_array(max_reps_shown)
         self.max = self.calculate_1rm()
-        self.weight_array = self.calculate_weights(formula=formula)
+        self.round_down=round_down
+        self.weight_array = self.calculate_weights(formula=formula, rounded=rounded, round_down=self.round_down)
         self.reps_to_weight = dict(zip(self.rep_array, self.weight_array))
 
     def create_rep_array(self, max_reps_shown: int):
@@ -60,8 +61,11 @@ class GymBroStats(GymBro):
             return self.kemmler()
         else:
             raise ValueError(f"Invalid formula: {self.formula}")
+    
+    def rounding_function(self, result, rounding_increment, round_down=True):
+        return rounding_increment*np.floor(result/rounding_increment) if round_down else rounding_increment*np.round(result/rounding_increment)
 
-    def reverse_epley(self, max: int, desired_reps: int, round=True, rounding_increment=5):
+    def reverse_epley(self, max: int, desired_reps: int, rounded=False, rounding_increment=5, round_down=True):
         '''
         Return weight and rep pairing given by Epley formula.
         Pros: Commonly-used formula.
@@ -70,15 +74,12 @@ class GymBroStats(GymBro):
         if desired_reps <= 0:
             raise Exception("Rep count must be 1 or greater.")
         if desired_reps == 1:
-            return max
+            return self.rounding_function(max, rounding_increment, round_down) if rounded else max
         else:
             result = max / (1 + desired_reps / 30)
-            if round:
-                result = rounding_increment * round(result / rounding_increment)
-            return result
-
-
-    def reverse_brzycki(self, max: int, desired_reps: int, round=True, rounding_increment=5):
+            return self.rounding_function(result, rounding_increment, round_down) if rounded else result
+            
+    def reverse_brzycki(self, max: int, desired_reps: int, rounded=False, rounding_increment=5, round_down=True):
         '''
         Return weight and rep pairing given by Brzycki formula.
         Pros: Commonly-used formula. 
@@ -90,12 +91,10 @@ class GymBroStats(GymBro):
             raise Exception("Brzycki Formula fails for reps over 37.")
         else:
             result = max * ((37 - desired_reps) / 36)
-            if round:
-                result = rounding_increment * round(result / rounding_increment)
-            return result
+            return self.rounding_function(result, rounding_increment, round_down) if rounded else result
 
 
-    def reverse_kemmler(self, max: int, desired_reps: int, round=True, rounding_increment=5):
+    def reverse_kemmler(self, max: int, desired_reps: int, rounded=False, rounding_increment=5, round_down=True):
         '''
         Return weight and rep pairing given by Kemmler formula.
         Pros: Polynomial terms make robust to low and high reps.
@@ -105,20 +104,30 @@ class GymBroStats(GymBro):
             raise Exception("Rep count must be 1 or greater.")
         else:
             result = max / (0.988 + 0.0104 * desired_reps + 0.00190 * desired_reps ** 2 - 0.0000584 * desired_reps ** 3)
-            if round:
-                result = rounding_increment * round(result / rounding_increment)
-            return result
+            return self.rounding_function(result, rounding_increment, round_down) if rounded else result
+
+    # def plates_calculator(weight, available_plate_weights=[2.5, 5, 10, 25, 45], bar_weight=45, unit='lbs') -> defaultdict:
+    #     weight = weight-bar_weight
+    #     available_plate_weights.sort(reverse=True)
+    #     plate_map = defaultdict(int)
+    #     for plate_weight in available_plate_weights:
+    #         while weight-2*plate_weight>=0:
+    #             plate_map[plate_weight]+=2
+    #             weight-=2*plate_weight
+    #     if weight!=0:
+    #         print(f'missing {weight} {unit}')
+    #     return plate_map
 
 
-    def calculate_weights(self, formula: str='Epley'):
+    def calculate_weights(self, round_down=True, formula: str='Epley', rounded=False):
         """
         Generate an array of weights for each rep count based on the selected formula.
         """
         if formula == 'Epley':
-            return [self.reverse_epley(self.max, rep_count, round=False) for rep_count in self.rep_array]
+            return [self.reverse_epley(self.max, rep_count, round_down=round_down, rounded=rounded) for rep_count in self.rep_array]
         elif formula == 'Brzycki':
-            return [self.reverse_brzycki(self.max, rep_count) for rep_count in self.rep_array]
+            return [self.reverse_brzycki(self.max, rep_count, round_down=round_down, rounded=rounded) for rep_count in self.rep_array]
         elif formula == 'Kemmler':
-            return [self.reverse_kemmler(self.max, rep_count) for rep_count in self.rep_array]
+            return [self.reverse_kemmler(self.max, rep_count, round_down=round_down, rounded=rounded) for rep_count in self.rep_array]
         else:
             raise ValueError("Invalid formula. Choose either 'Epley', 'Brzycki' or 'Kemmler'.")
