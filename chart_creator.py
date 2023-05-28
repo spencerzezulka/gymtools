@@ -14,6 +14,7 @@ with st.sidebar:
     metric = unit_system=='Metric'
     unit = 'kg' if metric else 'lb'
     weight = st.number_input(f'Weight ({unit}) :rock:', 0, 500, 135, step=5)  # min: 0lb, max: 23h, default: 17h
+    rpe = st.slider(f'RPE :tired_face:', 1, 10, 10)  # min: 1, max: 10, default: 10 (i.e. to failure)
     reps = st.number_input('Reps :repeat:', 1, 30, 1) #min 1 rep; max 30 for epley limitations
     formula = st.selectbox('Formula :scientist:', ['Epley', 'Brzycki', 'Kemmler et al.']) #tooltip-'Epley weak at low reps; Brzycki weak at high reps; Kemmler well-rounded and newest.')
     calculation = st.selectbox('Calculation :red_circle:', ['Rounded', 'Exact'])
