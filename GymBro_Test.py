@@ -1,7 +1,7 @@
-import main
+import formulas
 
 print('GymBro Test is Working!')
-winston_stats = main.GymBroStats(135, 5)
+winston_stats = formulas.GymBroStats(135, 5)
 print(f'Max: {winston_stats.max}')
 print(f'Weight Array: {winston_stats.weight_array}')
 print(f'Rep Array: {winston_stats.rep_array}')
