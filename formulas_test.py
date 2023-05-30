@@ -1,4 +1,7 @@
-import formulas
+import sys
+sys.path.append('..')
+from .. import formulas
+
 import unittest
 
 class TestFormulas(unittest.TestCase):
