@@ -1,6 +1,6 @@
-# 🏋️ gym-tools
+# 🏋️ gymtools
 
-gym-tools is a Streamlit interface which provides lifters interactive visualization of exercise data. These visualizations help inform users how to structure their workouts optimally based on their current working capacity, goals, and the latest science.
+gymtools is a Streamlit interface which provides lifters interactive visualization of exercise data. These visualizations help inform users how to structure their workouts optimally based on their current working capacity, goals, and the latest science.
 
 ## :wrench: Features
 - :1234: : Plan your next set, according to science! Input a working set of reps for a given weight. Optionally, specify a rate of perceived exertion for sets not taken to failure.
